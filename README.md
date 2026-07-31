@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Enterprise AI Knowledge Assistant
 
 ## Run with Docker
@@ -22,3 +23,7 @@ docker compose down
 The backend reaches the MCP service using the Docker network hostname
 `mcp-tools`, while the browser reaches the backend through its published host
 port. Uploaded documents are persisted in the local `uploaded_files` folder.
+=======
+# enterprise-ai-agent
+Enterprise Multi-Agent AI Platform using LLM, RAG and Agentic AI
+>>>>>>> 59cd1e78441f83208da022d3be6a2d44e4bad425
