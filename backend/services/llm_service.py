@@ -58,3 +58,18 @@ class LLMService:
     def simple_ask(self, prompt: str) -> str:
         result = self.chat([{"role": "user", "content": prompt}])
         return result["text"]
+
+    def chat_stream(self, messages: list[dict], temperature: float = 0.3):
+        """Yields text chunks as they arrive from the model."""
+        try:
+            with self.client.responses.stream(
+                model=self.deployment,
+                input=messages,
+                temperature=temperature,
+            ) as stream:
+                for event in stream:
+                    if event.type == "response.output_text.delta":
+                        yield event.delta
+        except Exception as e:
+            logger.error(f"Streaming LLM call failed: {e}")
+            yield "I'm having trouble processing that request right now."

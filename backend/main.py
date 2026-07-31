@@ -35,6 +35,7 @@ app.include_router(upload.router, prefix="/upload", tags=["Upload"])
 app.include_router(history.router, prefix="/history", tags=["History"])
 app.include_router(feedback.router, prefix="/feedback", tags=["Feedback"])
 app.include_router(email.router, prefix="/email", tags=["Email"])
+app.include_router(feedback.router, prefix="/feedback", tags=["Feedback"])
 app.add_middleware(RequestIDMiddleware)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
