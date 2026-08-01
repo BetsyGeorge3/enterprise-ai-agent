@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.api import chat, upload, history, feedback
@@ -14,6 +15,11 @@ from slowapi.errors import RateLimitExceeded
 print(">>> BACKEND MAIN.PY LOADED - VERSION MARKER XYZ123 <<<")
 
 setup_logging()
+
+from azure.monitor.opentelemetry import configure_azure_monitor
+
+if os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING"):
+    configure_azure_monitor(connection_string=os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING"))
 
 app = FastAPI(title="Enterprise AI Knowledge Assistant")
 
