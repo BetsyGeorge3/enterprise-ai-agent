@@ -20,6 +20,16 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - name: Debug env presence
+        run: |
+          if [ -z "$AZURE_OPENAI_ENDPOINT" ]; then echo "AZURE_OPENAI_ENDPOINT is MISSING"; else echo "AZURE_OPENAI_ENDPOINT is PRESENT (length: ${#AZURE_OPENAI_ENDPOINT})"; fi
+          if [ -z "$AZURE_OPENAI_KEY" ]; then echo "AZURE_OPENAI_KEY is MISSING"; else echo "AZURE_OPENAI_KEY is PRESENT (length: ${#AZURE_OPENAI_KEY})"; fi
+          if [ -z "$AZURE_OPENAI_DEPLOYMENT" ]; then echo "AZURE_OPENAI_DEPLOYMENT is MISSING"; else echo "AZURE_OPENAI_DEPLOYMENT is PRESENT (length: ${#AZURE_OPENAI_DEPLOYMENT})"; fi
+        env:
+          AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
+          AZURE_OPENAI_KEY: ${{ secrets.AZURE_OPENAI_KEY }}
+          AZURE_OPENAI_DEPLOYMENT: ${{ secrets.AZURE_OPENAI_DEPLOYMENT }}
+
       - name: Run evaluation suite
         env:
           SKIP_MCP_LOCAL_TESTS: "true"
