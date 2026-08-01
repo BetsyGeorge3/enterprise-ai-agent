@@ -51,3 +51,16 @@ def mcp_node(state: dict) -> dict:
     state["answer"] = result.get("result") or result.get("error")
     state["sources"] = [f"MCP: {instruction['tool']}"]
     return state
+
+async def call_mcp_tool(tool_name: str, args: dict, timeout: int = 10) -> dict:
+    try:
+        tools = await asyncio.wait_for(_get_tools(), timeout=timeout)
+        tool = next((t for t in tools if t.name == tool_name), None)
+        if not tool:
+            return {"error": f"Tool '{tool_name}' not found"}
+        result = await asyncio.wait_for(tool.ainvoke(args), timeout=timeout)
+        return {"result": result}
+    except asyncio.TimeoutError:
+        return {"error": f"MCP call to '{tool_name}' timed out after {timeout}s"}
+    except Exception as e:
+        return {"error": f"MCP call failed: {e}"}

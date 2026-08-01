@@ -70,10 +70,13 @@ def execute_plan_node(state: AgentState) -> AgentState:
 
     for step in plan:
         agent = step.get("agent", "rag")
-        instruction = step.get("instruction", "").replace("{previous_result}", previous_result)
-
         handler = AGENT_MAP.get(agent, AGENT_MAP["rag"])
-        answer, sources = handler(instruction)
+
+        if agent == "mcp":
+            answer, sources = handler(step)
+        else:
+            instruction = step.get("instruction", "").replace("{previous_result}", previous_result)
+            answer, sources = handler(instruction)
 
         results.append(f"[{agent}] {answer}")
         all_sources.extend(sources)

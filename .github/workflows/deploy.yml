@@ -16,13 +16,20 @@ jobs:
         uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
-
+      - name: Run evaluation suite
+        run: |
+          pip install -r requirements.txt
+          python -m evaluation.metrics
+          python -m evaluation.test_mcp_cases
+          
       - name: Log in to ACR
         uses: azure/docker-login@v2
         with:
           login-server: ${{ secrets.ACR_LOGIN_SERVER }}
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
+
+
 
       - name: Build and push backend
         run: |
@@ -47,3 +54,4 @@ jobs:
             --name mcp-tools \
             --resource-group rg-enterprise-ai-agent \
             --image ${{ secrets.ACR_LOGIN_SERVER }}/mcp-tools:${{ github.sha }}
+           

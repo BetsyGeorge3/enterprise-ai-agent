@@ -4,16 +4,16 @@ llm = LLMService()
 
 SYSTEM_PROMPT = (
     "You are an enterprise knowledge assistant. Answer the user's question "
-    "using ONLY the provided context below. If the answer isn't in the context, "
-    "say you don't have that information. Be concise and clear."
+    "using ONLY the information in the provided context below. Do not use any "
+    "outside knowledge, even if you know the answer. "
+    "If the context does not contain the answer, you MUST respond exactly with: "
+    "\"I don't have that information in the knowledge base.\" "
+    "Do not guess, infer, or supplement with general knowledge under any circumstances. "
+    "Be concise and clear when the context does contain the answer."
 )
 
 
 def answer_node(state: dict) -> dict:
-    """
-    Takes the retrieved context from state and generates a grounded answer
-    using the LLM. Updates state with the final answer.
-    """
     question = state["question"]
     context = state.get("context", "")
 
@@ -28,9 +28,6 @@ def answer_node(state: dict) -> dict:
         {"role": "user", "content": user_prompt}
     ])
 
-    # LLMService.chat returns both the generated text and usage metadata.
-    # Only the text belongs in the user-facing answer; retaining the whole
-    # dictionary here causes it to be rendered verbatim in chat responses.
     state["answer"] = llm_result["text"]
     state["tokens_used"] = llm_result["tokens_used"]
     return state
