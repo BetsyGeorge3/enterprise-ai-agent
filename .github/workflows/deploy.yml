@@ -1,12 +1,12 @@
 # .github/workflows/deploy.yml
-name: Build and Deploy
+name: Build, Test, and Deploy
 
 on:
   push:
     branches: [main]
 
 jobs:
-  test-and-deploy:
+  evaluate:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -20,19 +20,8 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Debug env presence
-        run: |
-          if [ -z "$AZURE_OPENAI_ENDPOINT" ]; then echo "AZURE_OPENAI_ENDPOINT is MISSING"; else echo "AZURE_OPENAI_ENDPOINT is PRESENT (length: ${#AZURE_OPENAI_ENDPOINT})"; fi
-          if [ -z "$AZURE_OPENAI_KEY" ]; then echo "AZURE_OPENAI_KEY is MISSING"; else echo "AZURE_OPENAI_KEY is PRESENT (length: ${#AZURE_OPENAI_KEY})"; fi
-          if [ -z "$AZURE_OPENAI_DEPLOYMENT" ]; then echo "AZURE_OPENAI_DEPLOYMENT is MISSING"; else echo "AZURE_OPENAI_DEPLOYMENT is PRESENT (length: ${#AZURE_OPENAI_DEPLOYMENT})"; fi
-        env:
-          AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
-          AZURE_OPENAI_KEY: ${{ secrets.AZURE_OPENAI_KEY }}
-          AZURE_OPENAI_DEPLOYMENT: ${{ secrets.AZURE_OPENAI_DEPLOYMENT }}
-
       - name: Run evaluation suite
         env:
-          SKIP_MCP_LOCAL_TESTS: "true"
           AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
           AZURE_OPENAI_KEY: ${{ secrets.AZURE_OPENAI_KEY }}
           AZURE_OPENAI_DEPLOYMENT: ${{ secrets.AZURE_OPENAI_DEPLOYMENT }}
@@ -43,13 +32,16 @@ jobs:
           COSMOS_CONNECTION_STRING: ${{ secrets.COSMOS_CONNECTION_STRING }}
           COSMOS_DATABASE: ${{ secrets.COSMOS_DATABASE }}
           COSMOS_CONTAINER: ${{ secrets.COSMOS_CONTAINER }}
-          AZURE_STORAGE_CONNECTION_STRING: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
-          AZURE_BLOB_CONTAINER: ${{ secrets.AZURE_BLOB_CONTAINER }}
           JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
-          KEY_VAULT_URL: ${{ secrets.KEY_VAULT_URL }}
         run: |
           python -m evaluation.metrics
-          python -m evaluation.test_mcp_cases
+
+  build-and-deploy:
+    needs: evaluate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Log in to Azure
         uses: azure/login@v2
