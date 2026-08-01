@@ -2,6 +2,8 @@ import sqlite3
 from pathlib import Path
 
 db_path = Path(__file__).resolve().parents[2] / "enterprise-documents" / "db" / "sales.db"
+db_path.parent.mkdir(parents=True, exist_ok=True)
+
 
 conn = sqlite3.connect(db_path)
 cursor = conn.cursor()

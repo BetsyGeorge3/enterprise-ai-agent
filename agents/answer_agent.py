@@ -18,7 +18,7 @@ def answer_node(state: dict) -> dict:
     context = state.get("context", "")
 
     if not context.strip():
-        state["answer"] = "I couldn't find any relevant information in the knowledge base for that question."
+        state["answer"] = "I don't have that information in the knowledge base."
         return state
 
     user_prompt = f"Context:\n{context}\n\nQuestion: {question}"
