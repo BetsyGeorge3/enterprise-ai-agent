@@ -6,30 +6,52 @@ on:
     branches: [main]
 
 jobs:
-  build-and-deploy:
+  test-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run evaluation suite
+        env:
+          SKIP_MCP_LOCAL_TESTS: "true"
+          AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
+          AZURE_OPENAI_KEY: ${{ secrets.AZURE_OPENAI_KEY }}
+          AZURE_OPENAI_DEPLOYMENT: ${{ secrets.AZURE_OPENAI_DEPLOYMENT }}
+          AZURE_OPENAI_EMBEDDING_DEPLOYMENT: ${{ secrets.AZURE_OPENAI_EMBEDDING_DEPLOYMENT }}
+          AZURE_SEARCH_ENDPOINT: ${{ secrets.AZURE_SEARCH_ENDPOINT }}
+          AZURE_SEARCH_KEY: ${{ secrets.AZURE_SEARCH_KEY }}
+          AZURE_SEARCH_INDEX: ${{ secrets.AZURE_SEARCH_INDEX }}
+          COSMOS_CONNECTION_STRING: ${{ secrets.COSMOS_CONNECTION_STRING }}
+          COSMOS_DATABASE: ${{ secrets.COSMOS_DATABASE }}
+          COSMOS_CONTAINER: ${{ secrets.COSMOS_CONTAINER }}
+          AZURE_STORAGE_CONNECTION_STRING: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
+          AZURE_BLOB_CONTAINER: ${{ secrets.AZURE_BLOB_CONTAINER }}
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          KEY_VAULT_URL: ${{ secrets.KEY_VAULT_URL }}
+        run: |
+          python -m evaluation.metrics
+          python -m evaluation.test_mcp_cases
+
       - name: Log in to Azure
         uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
-      - name: Run evaluation suite
-        run: |
-          pip install -r requirements.txt
-          python -m evaluation.metrics
-          python -m evaluation.test_mcp_cases
-          
+
       - name: Log in to ACR
         uses: azure/docker-login@v2
         with:
           login-server: ${{ secrets.ACR_LOGIN_SERVER }}
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
-
-
 
       - name: Build and push backend
         run: |
@@ -54,4 +76,3 @@ jobs:
             --name mcp-tools \
             --resource-group rg-enterprise-ai-agent \
             --image ${{ secrets.ACR_LOGIN_SERVER }}/mcp-tools:${{ github.sha }}
-           
